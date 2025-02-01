@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class InputManager : MonoBehaviour
 {
     private Playerinput Playerinput;
-    private Playerinput.OnFootActions OnFoot;
+    public Playerinput.OnFootActions OnFoot;
     private PlayerMotor motor;
     private PlayerLook look;
     // Awake is called when the script instance is being loaded
