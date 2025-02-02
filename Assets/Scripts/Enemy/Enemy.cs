@@ -7,16 +7,22 @@ public class Enemy : MonoBehaviour
 {
     private StateMachine stateMachine;
     private NavMeshAgent agent;
-    public Path path;
-
-    public NavMeshAgent Agent { get => agent; }
-    [SerializeField]
-    private string currentState;
-
     private GameObject player;
+    public NavMeshAgent Agent { get => agent; }
+    public GameObject Player { get => player; }
+
+    public Path path;
+    [Header("Sight values")]
     public float sightDistance = 20f;
     public float fieldOfView = 85f;
     public float eyeHeight;
+    [Header("Weapon values")]
+    public Transform gunBarrel;
+    [Range(0.1f, 10f)]
+    public float fireRate;
+    [SerializeField]
+    private string currentState;
+
 
     // Start is called before the first frame update
     void Awake()
@@ -34,32 +40,47 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         CanSeePlayer();
+        currentState = stateMachine.activeState.ToString();
     }
 
     public bool CanSeePlayer()
     {
-        if(player != null) 
+        if (player != null)
         {
-            // is player close enough to be seen
-            if (Vector3.Distance(transform.position, player.transform.position)<sightDistance)
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+          
+
+            if (distance < sightDistance)
             {
                 Vector3 targetDirection = player.transform.position - transform.position - (Vector3.up * eyeHeight);
                 float angleToPlayer = Vector3.Angle(targetDirection, transform.forward);
-                if(angleToPlayer >= fieldOfView && angleToPlayer <= fieldOfView) 
+               
+
+                if (angleToPlayer <= fieldOfView * 0.5f) // Fixed FOV check
                 {
-                    Ray ray = new Ray(transform.position + (Vector3.up*eyeHeight), targetDirection);
-                    RaycastHit hit = new RaycastHit();
-                    if(Physics.Raycast(ray, out hit,sightDistance)) 
+                    Ray ray = new Ray(transform.position + (Vector3.up * (eyeHeight + 0.5f)), targetDirection);
+                    RaycastHit hit;
+
+                    if (Physics.Raycast(ray, out hit, sightDistance))
                     {
-                        if(hit.transform.gameObject == player)
+                        Debug.DrawRay(ray.origin, ray.direction * sightDistance, Color.green); // Visible ray
+                        
+
+                        if (hit.transform.gameObject == player)
                         {
+                            
                             return true;
                         }
                     }
-                    Debug.DrawRay(ray.origin,ray.direction*sightDistance);
+                    else
+                    {
+                        Debug.DrawRay(ray.origin, ray.direction * sightDistance, Color.red);
+                     
+                    }
                 }
             }
         }
         return false;
     }
+
 }
